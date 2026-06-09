@@ -1,0 +1,72 @@
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-pad-none { padding: 0; }
+.card-pad-sm { padding: var(--space-sm); }
+.card-pad-md { padding: var(--space-md); }
+.card-pad-lg { padding: var(--space-lg); }
+.card-pad-xl { padding: var(--space-xl); }
+
+.card-clickable {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-clickable:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  border-color: var(--primary-lighter);
+}
+
+.card-clickable:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Variants */
+.card-default {}
+
+.card-gradient {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+}
+
+.card-gradient .card-secondary-text {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.card-outlined {
+  background: transparent;
+  border: 2px solid var(--border);
+  box-shadow: none;
+}
+
+.card-success {
+  background: var(--success-light);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.card-warning {
+  background: var(--warning-light);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.card-danger {
+  background: var(--danger-light);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.card-glass {
+  background: var(--surface-overlay);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}

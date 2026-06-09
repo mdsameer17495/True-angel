@@ -1,0 +1,56 @@
+.reminders-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.tabs-container {
+  display: flex;
+  gap: var(--space-sm);
+  background: var(--surface);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-xs);
+  margin-bottom: var(--space-xs);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.reminder-card {
+  padding: var(--space-md);
+  align-items: center;
+}
+
+.check-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.check-btn:active {
+  transform: scale(0.8);
+}
+
+.line-through {
+  text-decoration: line-through;
+}

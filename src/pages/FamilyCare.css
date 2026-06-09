@@ -1,0 +1,59 @@
+.family-care-container {
+  padding: var(--space-lg);
+  max-width: 428px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+.page-desc {
+  line-height: 1.5;
+}
+
+.contact-card {
+  padding: var(--space-md) !important;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contact-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.contact-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.relationship-tag {
+  background-color: var(--background);
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+
+.phone-number {
+  color: var(--text-muted);
+}
+
+.empty-contacts-state {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border);
+  padding: var(--space-2xl) var(--space-lg);
+}
+
+.empty-icon-bg {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

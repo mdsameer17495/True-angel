@@ -1,0 +1,121 @@
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--content-max-width);
+  z-index: var(--z-sticky);
+  padding: 0 var(--space-sm) calc(var(--safe-area-bottom) + var(--space-xs));
+  background: var(--surface);
+  border-top: 1px solid var(--border-light);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+[data-theme="dark"] .bottom-nav {
+  background: rgba(30, 41, 59, 0.92);
+}
+
+.bottom-nav-inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: var(--bottom-nav-height);
+  padding: 0 var(--space-xs);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xxs);
+  min-width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  color: var(--text-muted);
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav-item:active {
+  transform: scale(0.92);
+}
+
+.bottom-nav-item.active {
+  color: var(--primary);
+}
+
+.nav-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.nav-active-dot {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: scaleIn var(--transition-fast) ease forwards;
+}
+
+.nav-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.bottom-nav-center-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  top: -14px;
+  width: 58px;
+  height: 58px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.center-btn-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: var(--shadow-primary);
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.center-btn-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  opacity: 0.2;
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+.bottom-nav-center-btn:active .center-btn-ring {
+  transform: scale(0.9);
+}
+
+.bottom-nav-center-btn:hover .center-btn-ring {
+  box-shadow: var(--shadow-lg), var(--shadow-primary);
+  transform: translateY(-2px);
+}

@@ -1,0 +1,35 @@
+.add-medicine-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  border-bottom: 2px solid var(--border);
+  border-radius: 0;
+  padding: var(--space-xs) 0;
+  transition: border-color var(--transition-fast);
+  color: var(--text-primary);
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--primary);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Override default styling for select/time on mobile */
+.form-select, input[type="time"] {
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
