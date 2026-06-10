@@ -8,6 +8,19 @@ import Modal from '../components/UI/Modal';
 import { useReminderStore } from '../store';
 import './ReminderCenter.css';
 
+// Helper to get local date time string in YYYY-MM-DDTHH:MM format
+const getLocalDatetimeString = () => {
+  const now = new Date();
+  const tzOffset = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - tzOffset).toISOString().slice(0, 16);
+};
+
+// Helper to clean display of datetime-local value
+const formatReminderDate = (dateStr) => {
+  if (!dateStr) return '';
+  return dateStr.replace('T', ' ');
+};
+
 export default function ReminderCenter() {
   const { reminders, addReminder, toggleReminder, deleteReminder } = useReminderStore();
   const [activeTab, setActiveTab] = useState('all');
@@ -16,7 +29,7 @@ export default function ReminderCenter() {
     text: '',
     category: 'tasks',
     priority: 'low',
-    date: new Date().toISOString().split('T')[0]
+    date: getLocalDatetimeString()
   });
 
   const tabs = [
@@ -45,7 +58,7 @@ export default function ReminderCenter() {
       text: '',
       category: 'tasks',
       priority: 'low',
-      date: new Date().toISOString().split('T')[0]
+      date: getLocalDatetimeString()
     });
     setIsModalOpen(false);
   };
@@ -96,7 +109,7 @@ export default function ReminderCenter() {
                     </Badge>
                     {reminder.date && (
                       <Badge variant="default" size="sm" icon={Calendar}>
-                        {reminder.date}
+                        {formatReminderDate(reminder.date)}
                       </Badge>
                     )}
                   </div>
@@ -163,9 +176,9 @@ export default function ReminderCenter() {
           </div>
 
           <div className="form-group">
-            <label className="text-label">Date</label>
+            <label className="text-label">Date & Time</label>
             <input 
-              type="date" 
+              type="datetime-local" 
               className="form-input text-body" 
               value={formData.date}
               onChange={e => setFormData({...formData, date: e.target.value})}

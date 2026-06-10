@@ -2,11 +2,14 @@ import React from 'react';
 import Header from '../components/Layout/Header';
 import Card from '../components/UI/Card';
 import { useSettingsStore } from '../store';
-import { Sun, Moon, Type, Eye } from 'lucide-react';
+import { Sun, Moon, Type, Eye, Clock, Volume2, Globe } from 'lucide-react';
 import './AppSettings.css';
 
 export default function AppSettings() {
-  const { theme, fontSize, contrast, setTheme, toggleLargeText, toggleHighContrast } = useSettingsStore();
+  const { 
+    theme, fontSize, contrast, timeFormat, voiceAnnouncements, voiceLanguage,
+    setTheme, toggleLargeText, toggleHighContrast, setTimeFormat, toggleVoiceAnnouncements, setVoiceLanguage 
+  } = useSettingsStore();
 
   return (
     <>
@@ -92,6 +95,92 @@ export default function AppSettings() {
               </label>
             </div>
 
+            <hr className="settings-divider" />
+
+            {/* Time Format Selector */}
+            <div className="settings-item flex-between gap-md">
+              <div className="flex gap-sm">
+                <div className="settings-icon bg-primary-light text-primary-dark">
+                  <Clock size={20} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-body">Time Format</h4>
+                  <p className="text-caption">Choose between 12-hour and 24-hour display</p>
+                </div>
+              </div>
+              <div className="segmented-control">
+                <button 
+                  className={`segment-btn ${timeFormat === '12h' ? 'active' : ''}`}
+                  onClick={() => setTimeFormat('12h')}
+                >
+                  12h
+                </button>
+                <button 
+                  className={`segment-btn ${timeFormat === '24h' ? 'active' : ''}`}
+                  onClick={() => setTimeFormat('24h')}
+                >
+                  24h
+                </button>
+              </div>
+            </div>
+
+          </Card>
+        </section>
+
+        {/* Voice Settings Section */}
+        <section className="settings-section">
+          <h3 className="text-label mb-sm mt-md">Voice Assistant</h3>
+          
+          <Card className="settings-card flex-col gap-md">
+            {/* Voice Toggle */}
+            <div className="settings-item flex-between gap-md">
+              <div className="flex gap-sm">
+                <div className="settings-icon bg-success-light text-success-dark">
+                  <Volume2 size={20} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-body">Voice Announcements</h4>
+                  <p className="text-caption">Speak alarms and reminders aloud</p>
+                </div>
+              </div>
+              <label className="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  checked={voiceAnnouncements} 
+                  onChange={toggleVoiceAnnouncements} 
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+
+            <hr className="settings-divider" />
+
+            {/* Language Selector */}
+            <div className="settings-item flex-between gap-md">
+              <div className="flex gap-sm">
+                <div className="settings-icon bg-info-light text-info-dark">
+                  <Globe size={20} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-body">Language</h4>
+                  <p className="text-caption">Voice language for announcements</p>
+                </div>
+              </div>
+              <div className="segmented-control">
+                <button 
+                  className={`segment-btn ${voiceLanguage === 'en-US' ? 'active' : ''}`}
+                  onClick={() => setVoiceLanguage('en-US')}
+                >
+                  English
+                </button>
+                <button 
+                  className={`segment-btn ${voiceLanguage === 'hi-IN' ? 'active' : ''}`}
+                  onClick={() => setVoiceLanguage('hi-IN')}
+                >
+                  Hindi
+                </button>
+              </div>
+            </div>
           </Card>
         </section>
 
