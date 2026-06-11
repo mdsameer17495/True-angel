@@ -246,21 +246,22 @@ export default function App() {
       const now = new Date();
       const kolkataTimeStr = getKolkataTimeStr();
       
-      // Compute IST Datetime string for Reminders
-      const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
-      const kolkataDateStr = formatter.format(now); // YYYY-MM-DD
-      const kolkataDateTimeStr = `${kolkataDateStr}T${kolkataTimeStr}`; // YYYY-MM-DDTHH:MM
+      // Compute Local Datetime string for Reminders (YYYY-MM-DDTHH:MM)
+      const tzOffset = now.getTimezoneOffset() * 60000;
+      const localDateTimeStr = new Date(now.getTime() - tzOffset).toISOString().slice(0, 16);
 
       // Debug log displaying device time, India Standard Time, and alarm counts
-      console.log(`[Notification Engine] IST: ${kolkataDateTimeStr} | Alarms: ${alarmsRef.current.length} | Reminders: ${remindersRef.current.length} | Medicines: ${medicinesRef.current.length}`);
+      console.log(`[Notification Engine] IST: ${kolkataTimeStr} | Local: ${localDateTimeStr} | Alarms: ${alarmsRef.current.length} | Reminders: ${remindersRef.current.length} | Medicines: ${medicinesRef.current.length}`);
 
       // Reset de-duplication set if we entered a new minute in Kolkata timezone
       if (firedAlarmsRef.current.minute !== kolkataTimeStr) {
         firedAlarmsRef.current.minute = kolkataTimeStr;
         firedAlarmsRef.current.ids.clear();
       }
-      if (firedRemindersRef.current.minute !== kolkataTimeStr) {
-        firedRemindersRef.current.minute = kolkataTimeStr;
+      // Use local minute for Reminders
+      const localMinuteStr = localDateTimeStr.slice(11, 16);
+      if (firedRemindersRef.current.minute !== localMinuteStr) {
+        firedRemindersRef.current.minute = localMinuteStr;
         firedRemindersRef.current.ids.clear();
       }
       if (firedMedicinesRef.current.minute !== kolkataTimeStr) {
@@ -297,7 +298,7 @@ export default function App() {
       // Check reminders
       const pendingReminders = remindersRef.current.filter(r => !r.completed);
       pendingReminders.forEach(reminder => {
-        if (reminder.date === kolkataDateTimeStr || reminder.date === kolkataTimeStr /* fallback */) {
+        if (reminder.date === localDateTimeStr || reminder.date === localMinuteStr /* fallback */) {
           if (!firedRemindersRef.current.ids.has(reminder.id)) {
             firedRemindersRef.current.ids.add(reminder.id);
 
