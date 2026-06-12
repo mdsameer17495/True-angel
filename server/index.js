@@ -5,7 +5,14 @@ import { fileURLToPath } from 'url';
 import { query, initDB } from './db.js';
 
 const app = express();
-app.use(cors());
+
+// ── CORS Configuration (Frontend Connection Fix) ──
+app.use(cors({
+  origin: '*', // Jab sab chal jaye, toh aap '*' ki jagah apna Vercel ka URL daal sakte hain
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
@@ -18,7 +25,6 @@ function toCamel(row) {
   for (const [key, value] of Object.entries(row)) {
     const camel = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
     
-    // SQLite stores JSON as string; parse it back to array/object for the frontend
     if ((camel === 'times' || camel === 'details') && typeof value === 'string') {
       try {
         mapped[camel] = JSON.parse(value);
@@ -26,7 +32,6 @@ function toCamel(row) {
         mapped[camel] = value;
       }
     } 
-    // SQLite stores booleans as 1/0; convert them to true/false for the frontend
     else if (camel === 'takenToday' || camel === 'enabled' || camel === 'completed') {
       mapped[camel] = value === 1 || value === true;
     } 
@@ -38,6 +43,13 @@ function toCamel(row) {
 }
 
 // ==========================================
+// MAIN ROOT ROUTE (Fix for Render Error)
+// ==========================================
+app.get('/', (req, res) => {
+  res.send('<h1>🚀 True Angel API Server is Live and Running Successfully!</h1>');
+});
+
+// ==========================================
 // HEALTH CHECK
 // ==========================================
 app.get('/api/health', (req, res) => {
@@ -47,7 +59,6 @@ app.get('/api/health', (req, res) => {
 // ==========================================
 // MEDICINES
 // ==========================================
-
 app.get('/api/medicines', async (req, res) => {
   try {
     const { rows } = await query(
@@ -71,7 +82,6 @@ app.post('/api/medicines', async (req, res) => {
        JSON.stringify(times || ['08:00']), takenToday || false, notes || '']
     );
     const med = toCamel(rows[0]);
-    // Log to history
     await query(
       `INSERT INTO history (user_id, entity_type, entity_id, entity_name, action)
        VALUES ($1, 'medicine', $2, $3, 'created')`,
@@ -108,7 +118,6 @@ app.put('/api/medicines/:id/take', async (req, res) => {
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Medicine not found' });
     const med = toCamel(rows[0]);
-    // Log to history
     await query(
       `INSERT INTO history (user_id, entity_type, entity_id, entity_name, action)
        VALUES ($1, 'medicine', $2, $3, 'taken')`,
@@ -144,7 +153,6 @@ app.delete('/api/medicines/:id', async (req, res) => {
 // ==========================================
 // ALARMS
 // ==========================================
-
 app.get('/api/alarms', async (req, res) => {
   try {
     const { rows } = await query(
@@ -232,7 +240,6 @@ app.delete('/api/alarms/:id', async (req, res) => {
 // ==========================================
 // REMINDERS
 // ==========================================
-
 app.get('/api/reminders', async (req, res) => {
   try {
     const { rows } = await query(
@@ -326,7 +333,6 @@ app.delete('/api/reminders/:id', async (req, res) => {
 // ==========================================
 // EMERGENCY CONTACTS
 // ==========================================
-
 app.get('/api/contacts', async (req, res) => {
   try {
     const { rows } = await query(
@@ -383,7 +389,6 @@ app.delete('/api/contacts/:id', async (req, res) => {
 // ==========================================
 // HISTORY
 // ==========================================
-
 app.get('/api/history', async (req, res) => {
   try {
     const { type } = req.query;
@@ -403,27 +408,13 @@ app.get('/api/history', async (req, res) => {
 });
 
 // ==========================================
-// STATIC FILES & SPA FALLBACK
-// ==========================================
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const distPath = path.join(__dirname, '../dist');
-
-app.use(express.static(distPath));
-
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'));
-});
-
-// ==========================================
 // START SERVER
 // ==========================================
-
 async function start() {
   try {
     await initDB();
     app.listen(PORT, () => {
-      console.log(`🚀 True Angel API server running on http://localhost:${PORT}`);
+      console.log(`🚀 True Angel API server running on port ${PORT}`);
     });
   } catch (err) {
     console.error('Failed to start server:', err.message);
