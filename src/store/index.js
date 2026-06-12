@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:3001/api'
-  : '/api';
+  : 'https://true-angel.onrender.com/api';
 const DEFAULT_USER_ID = '11111111-1111-1111-1111-111111111111';
 
 // ── Auth Store (persisted to localStorage) ───────────────────
