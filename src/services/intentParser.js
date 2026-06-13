@@ -6,20 +6,30 @@ export function parseIntent(text) {
   // 1. Alarm intent ("Wake me up at 5 AM", "Set an alarm for 7:30")
   const alarmMatch = lowerText.match(/(?:wake me up at|set alarm for|set an alarm for)\s+(.*?)(?:\s|$)/);
   if (alarmMatch || lowerText.includes('wake me') || lowerText.includes('alarm')) {
-    const timeMatch = lowerText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/);
-    
+    const timeMatch = lowerText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|baje)?/);
+
     let timeStr = '07:00'; // fallback
     if (timeMatch) {
       let hours = parseInt(timeMatch[1], 10);
       const minutes = timeMatch[2] || '00';
-      const period = timeMatch[3];
-      
-      if (period === 'pm' && hours < 12) hours += 12;
-      if (period === 'am' && hours === 12) hours = 0;
-      
+      let period = timeMatch[3];
+
+      // Hinglish Context Rules:
+      // Agar text me 'raat', 'shyam', 'evening', या 'night' likha hai, toh treat it as PM
+      if (lowerText.includes('raat') || lowerText.includes('shyam') || lowerText.includes('pm')) {
+        if (hours < 12) hours += 12;
+      }
+      // Agar text me 'subah', 'dopehar' (12-4) ya normal AM/PM logic lagana ho
+      else if (lowerText.includes('subah') || period === 'am') {
+        if (hours === 12) hours = 0;
+      } 
+      // Agar sirf "9 baje" bola aur 1 se 6 ke beech ka number hai, toh mostly wo shyam/raat ka hi hoga
+      else if (hours >= 1 && hours <= 6) {
+        hours += 12; // Auto-convert 5 baje to 17:00 (5 PM)
+      }
+
       timeStr = `${hours.toString().padStart(2, '0')}:${minutes}`;
     }
-    
     return {
       type: 'alarm',
       data: {
