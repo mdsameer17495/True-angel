@@ -8,16 +8,17 @@ import './AIAssistant.css';
 
 export default function AIAssistant() {
   const [messages, setMessages] = useState([
-    { id: 1, type: 'ai', text: 'Hello! I am True Angel. I can help you set alarms, add medicine reminders, and schedule tasks. Just tap the microphone or type below.' }
+    { id: 1, type: 'ai', text: 'Hello! I am True Angel. I can help you set alarms, add medicine reminders, and more.' }
   ]);
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState('');
-  
+  const [pendingClarification, setPendingClarification] = useState(null); 
+
   const recognitionRef = useRef(null);
   const chatEndRef = useRef(null);
 
-  // Stores
+  // Stores Hooks
   const { addAlarm } = useAlarmStore();
   const { addMedicine } = useMedicineStore();
   const { addReminder } = useReminderStore();
@@ -26,30 +27,141 @@ export default function AIAssistant() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Unified function to save the exact item once period (AM/PM) is locked in
+  const executeSavedAction = (periodType, clarificationData) => {
+    let { pendingHours, pendingMinutes, originalText } = clarificationData;
+    
+    // Convert to 24-hour military format securely
+    if (periodType === 'pm' && pendingHours < 12) {
+      pendingHours += 12;
+    } else if (periodType === 'am' && pendingHours === 12) {
+      pendingHours = 0;
+    }
+
+    const finalTimeStr = `${pendingHours.toString().padStart(2, '0')}:${pendingMinutes}`;
+    const lowerText = originalText.toLowerCase();
+    const uniqueId = Date.now().toString();
+    
+    // Save to the respective store based on keywords
+    if (lowerText.includes('medicine') || lowerText.includes('dawa') || lowerText.includes('pill') || lowerText.includes('capsule') || lowerText.includes('sudha')) {
+      addMedicine({
+        id: uniqueId,
+        name: 'Medicine',
+        dosage: '1',
+        dosageUnit: 'pill',
+        frequency: 'daily',
+        times: [finalTimeStr],
+        takenToday: false
+      });
+    } else if (lowerText.includes('alarm') || lowerText.includes('wake') || lowerText.includes('baje')) {
+      addAlarm({
+        id: uniqueId,
+        time: finalTimeStr,
+        label: lowerText.includes('wake') ? 'Wake up' : 'Alarm',
+        type: 'one-time',
+        enabled: true
+      });
+    } else {
+      addReminder({
+        id: uniqueId,
+        text: originalText,
+        category: lowerText.includes('doctor') ? 'appointments' : 'tasks',
+        priority: 'medium',
+        date: 'Today',
+        time: finalTimeStr,
+        completed: false
+      });
+    }
+
+    const successReply = `Alright! I have successfully scheduled your request for ${finalTimeStr}.`;
+
+    // Clear state
+    setPendingClarification(null);
+    
+    setTimeout(() => {
+      setMessages(prev => [...prev, { id: Date.now() + 3, type: 'ai', text: successReply }]);
+      voiceService.speak(successReply);
+    }, 400);
+  };
+
   const processInput = (text) => {
     if (!text.trim()) return;
     
-    // Add user message
-    const newMsg = { id: Date.now(), type: 'user', text };
+    // 1. Add User Message
+    const timestamp = Date.now();
+    const newMsg = { id: timestamp, type: 'user', text };
     setMessages(prev => [...prev, newMsg]);
     
-    // Parse Intent
-    const intent = parseIntent(text);
-    
-    // Execute Action
-    if (intent.type === 'alarm') {
-      addAlarm({ id: Date.now().toString(), ...intent.data, enabled: true });
-    } else if (intent.type === 'medicine') {
-      addMedicine({ id: Date.now().toString(), ...intent.data, takenToday: false });
-    } else if (intent.type === 'reminder') {
-      addReminder({ id: Date.now().toString(), ...intent.data, completed: false });
+    const lowerInput = text.toLowerCase().trim();
+
+    // 2. Intercept text if there is an active pending clarification waiting for AM/PM
+    if (pendingClarification) {
+      if (lowerInput === 'am' || lowerInput === 'subah' || lowerInput === 'morning') {
+        executeSavedAction('am', pendingClarification);
+        return;
+      } else if (lowerInput === 'pm' || lowerInput === 'raat' || lowerInput === 'night' || lowerInput === 'shaam') {
+        executeSavedAction('pm', pendingClarification);
+        return;
+      }
     }
     
-    // Add AI Response & Speak
+    // 3. Parse Normal Intent
+    const intent = parseIntent(text);
+
+    // 4. Handle Clarification Needed Interception
+    if (intent.type === 'clarification_needed') {
+      setPendingClarification(intent.data); 
+      setTimeout(() => {
+        setMessages(prev => [...prev, { id: Date.now() + 1, type: 'ai', text: intent.reply }]);
+        voiceService.speak(intent.reply);
+      }, 500);
+      return; 
+    }
+    
+    // 5. Normal Direct Action Execution (If AM/PM was already provided in initial string)
+    const uniqueId = Date.now().toString();
+    if (intent.type === 'medicine') {
+      addMedicine({ 
+        id: uniqueId, 
+        name: intent.data?.name || 'Medicine',
+        dosage: intent.data?.dosage || '1',
+        dosageUnit: intent.data?.dosageUnit || 'pill',
+        frequency: intent.data?.frequency || 'daily',
+        times: intent.data?.times || ['08:00'],
+        takenToday: false 
+      });
+    } else if (intent.type === 'alarm') {
+      addAlarm({ 
+        id: uniqueId, 
+        time: intent.data?.time || '07:00',
+        label: intent.data?.label || 'Alarm',
+        type: intent.data?.type || 'one-time',
+        enabled: true 
+      });
+    } else if (intent.type === 'reminder') {
+      addReminder({ 
+        id: uniqueId, 
+        text: intent.data?.text || text,
+        category: intent.data?.category || 'tasks',
+        priority: intent.data?.priority || 'medium',
+        date: intent.data?.date || 'Today',
+        time: intent.data?.time || '12:00',
+        completed: false 
+      });
+    }
+    
+    // 6. Success AI Reply
     setTimeout(() => {
-      setMessages(prev => [...prev, { id: Date.now() + 1, type: 'ai', text: intent.reply }]);
+      setMessages(prev => [...prev, { id: Date.now() + 2, type: 'ai', text: intent.reply }]);
       voiceService.speak(intent.reply);
-    }, 600);
+    }, 500);
+  };
+
+  const handleClarificationConfirm = (periodType) => {
+    if (!pendingClarification) return;
+    const userChoiceLabel = periodType === 'am' ? 'Morning (AM)' : 'Night (PM)';
+    setMessages(prev => [...prev, { id: Date.now(), type: 'user', text: userChoiceLabel }]);
+    executeSavedAction(periodType, pendingClarification);
   };
 
   const handleSendText = () => {
@@ -58,6 +170,7 @@ export default function AIAssistant() {
     setInput('');
   };
 
+  // --- IN AIAssistant.jsx: REPLACE THE OLD toggleListening WITH THIS ---
   const toggleListening = () => {
     if (isListening) {
       if (recognitionRef.current) recognitionRef.current.stop();
@@ -66,29 +179,36 @@ export default function AIAssistant() {
     }
 
     if (!voiceService.isSupported()) {
-      setError('Voice input is not supported in your browser. Please type instead.');
+      setError('Voice recognition is not supported or permission is denied.');
       setTimeout(() => setError(''), 4000);
       return;
     }
 
     setIsListening(true);
-    recognitionRef.current = voiceService.startListening(
-      (transcript) => {
+    setError('');
+
+    // Calling updated robust structure smoothly
+    recognitionRef.current = voiceService.startListening({
+      lang: 'hi-IN', // Supports Hinglish inputs like "add medicine 2 beja sudha" perfectly
+      onResult: (transcript) => {
         setIsListening(false);
-        processInput(transcript);
+        processInput(transcript); 
       },
-      (err) => {
+      onInterim: (partial) => {
+        // Optional: you can show live typing here if you want
+        console.log("Live speaking:", partial);
+      },
+      onError: (err) => {
         setIsListening(false);
-        console.error(err);
+        console.error("Voice Error Details:", err);
         if (err !== 'no-speech') {
-          setError('Failed to recognize voice. Try typing.');
+          setError('Could not process voice input. Please verify mic access configurations.');
           setTimeout(() => setError(''), 4000);
         }
       }
-    );
+    });
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (recognitionRef.current) recognitionRef.current.stop();
@@ -133,6 +253,26 @@ export default function AIAssistant() {
         )}
         <div ref={chatEndRef} />
       </div>
+
+      {/* AM/PM Selection Box Component */}
+      {pendingClarification && (
+        <div className="clarification-container" style={{ display: 'flex', gap: '10px', padding: '10px', justifyContent: 'center' }}>
+          <button 
+            onClick={() => handleClarificationConfirm('am')}
+            className="clarification-btn clarification-btn-am"
+            style={{ padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', border: '1px solid #ccc', backgroundColor: '#fff' }}
+          >
+            ☀️ Subah (AM)
+          </button>
+          <button 
+            onClick={() => handleClarificationConfirm('pm')}
+            className="clarification-btn clarification-btn-pm"
+            style={{ padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', border: '1px solid #ccc', backgroundColor: '#fff' }}
+          >
+            🌙 Raat (PM)
+          </button>
+        </div>
+      )}
 
       <div className="chat-input-area">
         <button 

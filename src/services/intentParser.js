@@ -1,62 +1,65 @@
 // Utility to parse natural language commands into actionable intents
-
 export function parseIntent(text) {
   const lowerText = text.toLowerCase();
   
-  // 1. Alarm intent ("Wake me up at 5 AM", "Set an alarm for 7:30")
-  const alarmMatch = lowerText.match(/(?:wake me up at|set alarm for|set an alarm for)\s+(.*?)(?:\s|$)/);
-  if (alarmMatch || lowerText.includes('wake me') || lowerText.includes('alarm')) {
-    const timeMatch = lowerText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|baje)?/);
+  // ==========================================
+  // STEP 1: TIME EXTRACTION
+  // ==========================================
+  const timeMatch = lowerText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|baje)?/);
 
-    let timeStr = '07:00'; // fallback
-    if (timeMatch) {
-      let hours = parseInt(timeMatch[1], 10);
-      const minutes = timeMatch[2] || '00';
-      let period = timeMatch[3];
+  let hours = null;
+  let minutes = '00';
+  let period = '';
 
-      // Hinglish Context Rules:
-      // Agar text me 'raat', 'shyam', 'evening', या 'night' likha hai, toh treat it as PM
-      if (lowerText.includes('raat') || lowerText.includes('shyam') || lowerText.includes('pm')) {
-        if (hours < 12) hours += 12;
-      }
-      // Agar text me 'subah', 'dopehar' (12-4) ya normal AM/PM logic lagana ho
-      else if (lowerText.includes('subah') || period === 'am') {
-        if (hours === 12) hours = 0;
-      } 
-      // Agar sirf "9 baje" bola aur 1 se 6 ke beech ka number hai, toh mostly wo shyam/raat ka hi hoga
-      else if (hours >= 1 && hours <= 6) {
-        hours += 12; // Auto-convert 5 baje to 17:00 (5 PM)
-      }
-
-      timeStr = `${hours.toString().padStart(2, '0')}:${minutes}`;
-    }
-    return {
-      type: 'alarm',
-      data: {
-        time: timeStr,
-        label: lowerText.includes('wake') ? 'Wake up' : 'Alarm',
-        type: 'one-time'
-      },
-      reply: `I've set your alarm for ${timeStr}.`
-    };
+  if (timeMatch) {
+    hours = parseInt(timeMatch[1], 10);
+    minutes = timeMatch[2] || '00';
+    period = timeMatch[3] || '';
   }
-  
-  // 2. Medicine intent ("Remind me to take medicine at 8 PM")
-  if (lowerText.includes('medicine') || lowerText.includes('pill')) {
-    const timeMatch = lowerText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/);
-    let timeStr = '20:00'; // fallback 8 PM
-    
-    if (timeMatch) {
-      let hours = parseInt(timeMatch[1], 10);
-      const minutes = timeMatch[2] || '00';
-      const period = timeMatch[3];
-      
-      if (period === 'pm' && hours < 12) hours += 12;
-      if (period === 'am' && hours === 12) hours = 0;
-      
-      timeStr = `${hours.toString().padStart(2, '0')}:${minutes}`;
+
+  // ==========================================
+  // STEP 2: CLARIFICATION LOGIC (Hinglish + English Support)
+  // ==========================================
+  let isTimeSet = false;
+  let needsClarification = false;
+
+  if (hours !== null) {
+    const containsNight = lowerText.includes('raat') || lowerText.includes('shyam') || lowerText.includes('evening') || lowerText.includes('pm') || lowerText.includes('night');
+    const containsMorning = lowerText.includes('subah') || lowerText.includes('morning') || lowerText.includes('am') || lowerText.includes('dopehar');
+
+    if (containsNight) {
+      if (hours < 12) hours += 12;
+      isTimeSet = true;
+    } else if (containsMorning || period === 'am') {
+      if (hours === 12) hours = 0;
+      isTimeSet = true;
+    } else {
+      // Missing AM/PM context -> Trigger Confirmation
+      needsClarification = true;
     }
-    
+
+    if (needsClarification) {
+      return {
+        type: 'clarification_needed',
+        data: { 
+          pendingHours: hours, 
+          pendingMinutes: minutes,
+          originalText: text 
+        },
+        reply: `You mentioned ${hours}:${minutes}. Do you want to set it for Morning (AM) or Night (PM)?`
+      };
+    }
+  }
+
+  // Final structured military time string
+  const timeStr = hours !== null ? `${hours.toString().padStart(2, '0')}:${minutes}` : '07:00';
+
+  // ==========================================
+  // STEP 3: INTENT CATEGORIZATION & ENGLISH REPLIES
+  // ==========================================
+
+  // A. Medicine Intent
+  if (lowerText.includes('medicine') || lowerText.includes('pill') || lowerText.includes('dawa') || lowerText.includes('capsule')) {
     return {
       type: 'medicine',
       data: {
@@ -66,13 +69,26 @@ export function parseIntent(text) {
         frequency: 'daily',
         times: [timeStr]
       },
-      reply: `I'll remind you to take your medicine at ${timeStr}.`
+      reply: `I have successfully added your medicine reminder at ${timeStr}.`
     };
   }
   
-  // 3. Task/Appointment Reminder intent ("Remind me to call doctor tomorrow")
-  if (lowerText.includes('remind me to') || lowerText.includes('schedule')) {
-    let taskText = lowerText.replace(/remind me to/g, '').replace(/schedule/g, '').trim();
+  // B. Alarm Intent
+  if (lowerText.includes('alarm') || lowerText.includes('wake') || lowerText.includes('baje')) {
+    return {
+      type: 'alarm',
+      data: {
+        time: timeStr,
+        label: lowerText.includes('wake') ? 'Wake up' : 'Alarm',
+        type: 'one-time'
+      },
+      reply: `I have successfully set your alarm for ${timeStr}.`
+    };
+  }
+  
+  // C. General Reminder Intent
+  if (lowerText.includes('remind') || lowerText.includes('schedule') || lowerText.includes('reminder') || lowerText.includes('call') || lowerText.includes('task')) {
+    let taskText = lowerText.replace(/remind me to/g, '').replace(/schedule/g, '').replace(/reminder/g, '').replace(/add/g, '').trim();
     let date = 'Today';
     
     if (taskText.includes('tomorrow')) {
@@ -85,19 +101,20 @@ export function parseIntent(text) {
     return {
       type: 'reminder',
       data: {
-        text: taskText.charAt(0).toUpperCase() + taskText.slice(1),
+        text: text, // Keeps full user description
         category,
         priority: 'medium',
-        date: date
+        date: date,
+        time: timeStr
       },
-      reply: `I've added "${taskText}" to your reminders for ${date.toLowerCase()}.`
+      reply: `I have successfully added your reminder: "${text}" for ${date.toLowerCase()} at ${timeStr}.`
     };
   }
 
-  // 4. Default Greeting / Unknown
+  // D. Default Greetings
   if (lowerText.includes('hello') || lowerText.includes('hi')) {
-    return { type: 'chat', reply: "Hello! I'm here to help you manage your health and schedule." };
+    return { type: 'chat', reply: "Hello! I am ready to help you manage your health and schedule." };
   }
 
-  return { type: 'chat', reply: "I've noted that down. You can ask me to set alarms or remind you about medicines." };
+  return { type: 'chat', reply: "I have noted that down. You can ask me to set alarms or remind you about medicines." };
 }

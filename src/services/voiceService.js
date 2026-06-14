@@ -2,7 +2,7 @@
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-export const voiceService = {
+const voiceServiceObj = {
   isSupported: () => !!SpeechRecognition,
 
   /**
@@ -97,3 +97,6 @@ export const voiceService = {
     }
   }
 };
+
+// Named export mapping taaki AIAssistant.jsx ko exact 'voiceService' variable mil sake
+export { voiceServiceObj as voiceService };
