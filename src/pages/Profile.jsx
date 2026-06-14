@@ -47,7 +47,15 @@ export default function Profile() {
   return (
     <>
       <Header title="Profile" />
-      <div className="profile-container animate-fadeInUp">
+      <div className="profile-container animate-fadeInUp"
+      style={{
+        paddingTop: '60px',     /* <-- Baki pages ki tarah perfect unified gap */
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        paddingBottom: '100px', /* Bottom microphone/nav bar ke liye safety padding */
+        boxSizing: 'border-box'
+      }}
+      >
         <div className="profile-header">
           <div className="profile-avatar">
             <UserIcon size={40} className="text-primary-dark" />

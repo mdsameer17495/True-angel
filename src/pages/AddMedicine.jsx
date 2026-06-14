@@ -47,7 +47,15 @@ export default function AddMedicine() {
   return (
     <>
       <Header title="Add Medicine" showBack />
-      <div className="add-medicine-container animate-fadeInUp">
+      <div className="add-medicine-container animate-fadeInUp"
+      style={{ 
+        paddingTop: '65px',     /* <-- Perfect header gap */
+        paddingLeft: '16px', 
+        paddingRight: '16px',
+        paddingBottom: '100px', 
+        boxSizing: 'border-box'
+      }}
+      >
         <form onSubmit={handleSubmit}>
           
           <Card className="mb-md p-md">

@@ -216,7 +216,18 @@ export default function AIAssistant() {
   }, []);
 
   return (
-    <div className="assistant-container">
+    <div className="assistant-container"
+     style={{
+        paddingTop: '60px',     /* <-- Sabhi pages ki tarah unified perfect layout gap */
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        paddingBottom: '140px', /* Taaki text-input field aur bottom mic ke liye achhi space mile */
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh'
+      }}
+    >
       <Header title="AI Assistant" />
       
       {error && (

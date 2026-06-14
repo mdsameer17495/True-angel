@@ -97,7 +97,15 @@ export default function AlarmCenter() {
           </button>
         }
       />
-      <div className="alarm-center-container animate-fadeInUp">
+      <div className="alarm-center-container animate-fadeInUp"
+      style={{ 
+        paddingTop: '65px',     /* <-- Perfect header gap */
+        paddingLeft: '16px', 
+        paddingRight: '16px',
+        paddingBottom: '100px', /* Bottom nav bar ke liye space */
+        boxSizing: 'border-box'
+      }}
+      >
         
         <div className="alarms-list">
           {alarms.map(alarm => (

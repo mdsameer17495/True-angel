@@ -1,3 +1,7 @@
+/* ==========================================================================
+   UPDATED APP HEADER - WITH PREMIUM TYPOGRAPHY & OVERLAP PROTECTION
+   ========================================================================== */
+
 .app-header {
   position: fixed;
   top: 0;
@@ -5,7 +9,8 @@
   transform: translateX(-50%);
   width: 100%;
   max-width: var(--content-max-width);
-  height: var(--header-height);
+  /* Height ko explicit standard 70px force kar rahe hain safe spacing ke liye */
+  height: 70px; 
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -15,6 +20,7 @@
   z-index: var(--z-sticky);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  box-sizing: border-box; /* Spacing calculation exact rakhne ke liye */
 }
 
 [data-theme="dark"] .app-header {
@@ -27,6 +33,7 @@
   backdrop-filter: none;
 }
 
+/* Icons aur left-right sections ki alignment */
 .header-left, .header-right {
   min-width: 40px;
   display: flex;
@@ -40,25 +47,28 @@
 .header-center {
   flex: 1;
   text-align: center;
-  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .header-title {
-  font-family: var(--font-heading);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 700; /* Ekdum professional bold bold text */
+  color: var(--text-primary, #1a1a1a);
+  letter-spacing: -0.5px;
+  margin: 0;
 }
 
+/* Subtitle agar use ho toh uski gap tracking */
 .header-subtitle {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
-  margin-top: -2px;
+  margin-top: 2px;
 }
 
+/* Back Button configuration */
 .header-back-btn {
   width: 40px;
   height: 40px;

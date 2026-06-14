@@ -13,31 +13,41 @@ export default function Medicines() {
   const { medicines, markTaken, deleteMedicine } = useMedicineStore();
 
   return (
-    <>
-      <Header 
-        title="Medicines" 
-        rightAction={
-          <button className="text-primary flex-center" onClick={() => navigate('/add-medicine')}>
-            <Plus size={24} />
-          </button>
-        }
-      />
-      <div className="medicines-container animate-fadeInUp">
-        
-        {/* Weekly Adherence Summary */}
-        <section className="mb-xl">
-          <Card className="bg-primary-light text-primary-dark border-none">
-            <div className="flex-between">
-              <div>
-                <h2 className="text-h2">Weekly Adherence</h2>
-                <p className="opacity-80">You're doing great!</p>
-              </div>
-              <div className="text-display">92%</div>
+  <>
+    <Header 
+      title="Medicines" 
+      rightAction={
+        <button className="text-primary flex-center" onClick={() => navigate('/add-medicine')}>
+          <Plus size={24} />
+        </button>
+      }
+    />
+    
+    {/* Overlap Fix: Dashboard ki tarah perfect gap ke liye paddingTop laga diya */}
+    <div 
+      className="medicines-container animate-fadeInUp"
+      style={{
+        paddingTop: '65px',     /* <-- Isse gap ekdum perfect aur tight ho jayega */
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        paddingBottom: '100px', /* Bottom nav bar ke liye safe space */
+        boxSizing: 'border-box'
+      }}
+    >
+      {/* Weekly Adherence Summary */}
+      <section className="mb-xl">
+        <Card className="bg-primary-light text-primary-dark border-none">
+          <div className="flex-between">
+            <div>
+              <h2 className="text-h2">Weekly Adherence</h2>
+              <p className="opacity-80">You're doing great!</p>
             </div>
-          </Card>
-        </section>
+            <div className="text-display">92%</div>
+          </div>
+        </Card>
+      </section>
 
-        {/* Today's Schedule */}
+      {/* Today's Schedule */}
         <section>
           <div className="flex-between mb-sm">
             <h2 className="text-h3">Today's Schedule</h2>

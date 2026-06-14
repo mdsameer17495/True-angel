@@ -24,74 +24,83 @@ export default function Dashboard() {
   const nextMedicine = medicines.find(m => !m.takenToday);
 
   return (
-    <>
-      <Header 
-        title="True Angel" 
-        rightAction={
-          <button 
-            className="text-secondary flex-center" 
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
-            onClick={() => navigate('/notifications')}
-            aria-label="Notifications"
-          >
-            <Bell size={24} />
-          </button>
-        } 
-        transparent 
-      />
-      
-      <div className="dashboard-container">
-        {/* Greeting Section */}
-        <div className="greeting-section animate-fadeInUp stagger-1">
-          <h1 className="text-h1">{getGreeting()}, {user?.name || 'User'}!</h1>
-          <p className="text-secondary mt-1">Here is your care summary for today.</p>
-        </div>
+  <>
+    <Header 
+      title="True Angel" 
+      rightAction={
+        <button 
+          className="text-secondary flex-center" 
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+          onClick={() => navigate('/notifications')}
+          aria-label="Notifications"
+        >
+          <Bell size={24} />
+        </button>
+      } 
+      transparent 
+    />
+    
+    {/* Overlap Fix: padding-top aur margin-top add kiya hai taaki content safe zone mein rahe */}
+    <div 
+      className="dashboard-container" 
+      style={{ 
+        paddingTop: '45px',     /* <-- Header ke overlapping se text bachane ke liye */
+        paddingLeft: '16px', 
+        paddingRight: '16px',
+        boxSizing: 'border-box',
+      }}
+    >
+      {/* Greeting Section - Ab yeh Header ke peeche nahi chupegi */}
+      <div className="greeting-section animate-fadeInUp stagger-1">
+        <h1 className="text-h1">{getGreeting()}, {user?.name || 'User'}!</h1>
+        <p className="text-secondary mt-1">Here is your care summary for today.</p>
+      </div>
 
-        {/* Next Medicine Card */}
-        <section className="dashboard-section animate-fadeInUp stagger-2">
-          <div className="section-header">
-            <h2 className="text-h3">Next Medicine</h2>
-            <button className="text-link text-small flex-center" onClick={() => navigate('/medicines')}>
-              See All <ChevronRight size={14} />
-            </button>
-          </div>
-          
-          {nextMedicine ? (
-            <Card variant="gradient" className="medicine-card" onClick={() => navigate('/medicines')}>
-              <div className="flex-between gap-md align-start">
-                <div className="overflow-hidden">
-                  <h3 className="text-h2 text-inverse truncate">{nextMedicine.name}</h3>
-                  <p className="card-secondary-text mt-1 truncate">
-                    {nextMedicine.dosage} {nextMedicine.dosageUnit} {nextMedicine.instructions ? `• ${nextMedicine.instructions}` : ''}
-                  </p>
-                </div>
-                <div className="time-badge flex-shrink-0">
-                  <Clock size={16} /> {nextMedicine.times?.[0] || 'Scheduled'}
-                </div>
+      {/* Next Medicine Card */}
+      <section className="dashboard-section animate-fadeInUp stagger-2">
+        <div className="section-header">
+          <h2 className="text-h3">Next Medicine</h2>
+          <button className="text-link text-small flex-center" onClick={() => navigate('/medicines')}>
+            See All <ChevronRight size={14} />
+          </button>
+        </div>
+        
+        {nextMedicine ? (
+          <Card variant="gradient" className="medicine-card" onClick={() => navigate('/medicines')}>
+            <div className="flex-between gap-md align-start">
+              <div className="overflow-hidden">
+                <h3 className="text-h2 text-inverse truncate">{nextMedicine.name}</h3>
+                <p className="card-secondary-text mt-1 truncate">
+                  {nextMedicine.dosage} {nextMedicine.dosageUnit} {nextMedicine.instructions ? `• ${nextMedicine.instructions}` : ''}
+                </p>
               </div>
-              <div className="mt-4 flex gap-sm">
-                <Button 
-                  size="sm" 
-                  variant="secondary" 
-                  className="take-btn" 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    markTaken(nextMedicine.id);
-                  }}
-                >
-                  Mark Taken
-                </Button>
+              <div className="time-badge flex-shrink-0">
+                <Clock size={16} /> {nextMedicine.times?.[0] || 'Scheduled'}
               </div>
-            </Card>
-          ) : (
-            <Card className="medicine-card-empty flex-col flex-center text-center gap-sm p-lg">
-              <p className="text-muted text-body-sm">No pending medicines for today!</p>
-              <Button size="sm" onClick={() => navigate('/add-medicine')} className="mt-xs">
-                Add Medicine
+            </div>
+            <div className="mt-4 flex gap-sm">
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                className="take-btn" 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  markTaken(nextMedicine.id);
+                }}
+              >
+                Mark Taken
               </Button>
-            </Card>
-          )}
-        </section>
+            </div>
+          </Card>
+        ) : (
+          <Card className="medicine-card-empty flex-col flex-center text-center gap-sm p-lg">
+            <p className="text-muted text-body-sm">No pending medicines for today!</p>
+            <Button size="sm" onClick={() => navigate('/add-medicine')} className="mt-xs">
+              Add Medicine
+            </Button>
+          </Card>
+        )}
+      </section>
 
         {/* Quick Actions grid */}
         <section className="dashboard-section animate-fadeInUp stagger-3">
